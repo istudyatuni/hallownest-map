@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Simple Hallownest map</title>
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+		integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+		integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+	<style>
+		:root,
+		body,
+		#myMap {
+			height: 100%;
+			width: 100%;
+			margin: 0;
+			padding: 0;
+		}
+
+		.leaflet-container {
+			background-color: black;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="myMap"></div>
+
+	<script>
+		const defaultLayer = L.tileLayer('/out-webp/part_{y}_{x}.webp', {
+			tileSize: L.point(256, 170),
+			minZoom: 3,
+			maxZoom: 10,
+			bounds: [[-110, 20], [-20, 170]],
+			minNativeZoom: 4,
+			maxNativeZoom: 4,
+			errorTileUrl: '/error.webp'
+		});
+
+		const myMap = L.map('myMap', {
+			crs: L.CRS.Simple,
+			minZoom: 3,
+			maxZoom: 10,
+			layers: [defaultLayer],
+			wheelPxPerZoomLevel: 100,
+		});
+
+		myMap.setView([-65, 95], 4);
+
+		myMap.on('click', (e) => { myMap.panTo(e.latlng) })
+
+		console.log("Map loaded");
+	</script>
+</body>
+
+</html>

@@ -5,14 +5,21 @@ use anyhow::{Context, Result, bail};
 const FILENAME_PREFIX: &str = "part";
 
 fn main() -> Result<()> {
-    let Some(arg) = std::env::args().nth(1) else {
+    let Some(input_dir) = std::env::args().nth(1) else {
         bail!("pass folder as first argument")
     };
-    fix_folder(&PathBuf::from(arg)).context("failed to fix folder")
+    let Some(output_dir) = std::env::args().nth(2) else {
+        bail!("pass folder as first argument")
+    };
+    let output_dir = PathBuf::from(output_dir);
+    if !output_dir.exists() {
+        std::fs::create_dir_all(&output_dir).context("failed to create output dir")?;
+    }
+    fix_folder(&PathBuf::from(input_dir), &output_dir).context("failed to fix images folder")
 }
 
-fn fix_folder(path: &Path) -> Result<()> {
-    for entry in std::fs::read_dir(path).context("failed to read dir")? {
+fn fix_folder(input_dir: &Path, output_dir: &Path) -> Result<()> {
+    for entry in std::fs::read_dir(input_dir).context("failed to read dir")? {
         let entry = entry.context("failed to get dir entry")?;
         let path = entry.path();
         if path.is_dir() {
@@ -30,14 +37,14 @@ fn fix_folder(path: &Path) -> Result<()> {
 
         let basename = fix_filename(basename);
 
-        let mut new_path = path.with_file_name(basename);
+        let mut new_path = output_dir.join(basename);
         if let Some(ext) = path.extension() {
             new_path.set_extension(ext);
         }
 
-        std::fs::rename(&path, &new_path).with_context(|| {
+        std::fs::copy(&path, &new_path).with_context(|| {
             format!(
-                "failed to move {} to {}",
+                "failed to copy {} to {}",
                 path.display(),
                 new_path.display()
             )
@@ -52,7 +59,7 @@ fn fix_filename(name: &str) -> String {
     let parts = name
         .split("_")
         .map(|p| {
-            if p == FILENAME_PREFIX || !p.contains(".") {
+            if p == FILENAME_PREFIX {
                 p.to_string()
             } else {
                 round_num_str(p)
@@ -63,9 +70,10 @@ fn fix_filename(name: &str) -> String {
     parts.join("_")
 }
 
-// "0.999972" -> "1"
+// "0.999972" -> "2"
+// "1" -> "2"
 fn round_num_str(num: &str) -> String {
     let num: f64 = num.parse().expect("should be valid f64");
 
-    (num.round() as u64).to_string()
+    (num.round() as u64 + 1).to_string()
 }
