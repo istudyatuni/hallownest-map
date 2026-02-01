@@ -1,0 +1,8 @@
+/out-*
+/target
+*.png
+*.jxl
+*.avif
+*.webp
+*.sublime-workspace
+!/error.webp

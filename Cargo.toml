@@ -1,0 +1,6 @@
+[package]
+name = "hallownest-map"
+edition = "2024"
+
+[dependencies]
+anyhow = "1"
